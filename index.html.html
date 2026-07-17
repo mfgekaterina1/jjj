@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Golden Fish Mystery</title>
+    <style>
+        /* ===== RESET & GLOBAL ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0ebe3;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            user-select: none;
+        }
+        #game-container {
+            width: 100vw;
+            height: 100vh;
+            max-width: 1280px;
+            max-height: 900px;
+            background: #fffaf5;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ===== SCREENS ===== */
+        .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: #fffaf5;
+            padding: 24px 32px 32px 32px;
+            overflow-y: auto;
+        }
+        .screen.active {
+            display: flex;
+        }
+
+        /* ===== TOP BAR ===== */
+        #top-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 8px 0 16px 0;
+            flex-shrink: 0;
+            gap: 16px;
+        }
+        #top-bar .title-mini {
+            font-size: 18px;
+            font-weight: 600;
+            color: #b8860b;
+            letter-spacing: 1px;
+            margin-right: auto;
+        }
+        .btn-notebook {
+            background: #f5ede4;
+            border: 2px solid #d4c5b2;
+            border-radius: 30px;
+            padding: 8px 22px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #5a4a3a;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+        }
+        .btn-notebook:hover {
+            background: #e8dccc;
+            transform: scale(1.02);
+        }
+        .btn-notebook:active {
+            transform: scale(0.96);
+        }
+
+        /* ===== START SCREEN ===== */
+        #start-screen {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(145deg, #faf6f0, #f0ebe3);
+        }
+        #start-screen h1 {
+            font-size: 52px;
+            color: #b8860b;
+            text-shadow: 2px 2px 0 #e8dccc;
+            margin-bottom: 12px;
+            letter-spacing: 2px;
+        }
+        #start-screen .subtitle {
+            font-size: 20px;
+            color: #7a6a5a;
+            margin-bottom: 30px;
+        }
+        #start-screen .crime-description {
+            max-width: 660px;
+            background: white;
+            padding: 28px 36px;
+            border-radius: 20px;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.06);
+            text-align: left;
+            font-size: 17px;
+            line-height: 1.7;
+            color: #3d3328;
+            margin-bottom: 36px;
+            border: 1px solid #e8ddd0;
+        }
+        #start-screen .crime-description strong {
+            color: #b8860b;
+        }
+        .btn-start {
+            background: #b8860b;
+            border: none;
+            border-radius: 60px;
+            padding: 18px 64px;
+            font-size: 26px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: all 0.25s;
+            box-shadow: 0 6px 0 #7a5f08, 0 10px 28px rgba(184, 134, 11, 0.25);
+            letter-spacing: 1px;
+        }
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #7a5f08, 0 14px 34px rgba(184, 134, 11, 0.30);
+        }
+        .btn-start:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #7a5f08;
+        }
+
+        /* ===== MAP SCREEN ===== */
+        #map-screen {
+            padding: 20px 32px 32px 32px;
+        }
+        #map-screen .map-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #4a3d32;
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+        }
+        .map-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #f8f2ea;
+            border-radius: 20px;
+            border: 2px dashed #d4c5b2;
+            min-height: 240px;
+            position: relative;
+            padding: 16px;
+        }
+        .map-wrapper img {
+            max-width: 100%;
+            max-height: 460px;
+            border-radius: 12px;
+            object-fit: contain;
+            background: #fffcf7;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+        }
+        .map-placeholder {
+            font-size: 52px;
+            color: #d4c5b2;
+            letter-spacing: 4px;
+        }
+        .map-locations {
+            display: flex;
+            gap: 24px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .map-location-btn {
+            padding: 14px 32px;
+            border-radius: 40px;
+            border: 2px solid #d4c5b2;
+            background: white;
+            font-size: 17px;
+            font-weight: 600;
+            color: #5a4a3a;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+            min-width: 160px;
+        }
+        .map-location-btn:hover:not(:disabled) {
+            background: #f5ede4;
+            border-color: #b8860b;
+            transform: scale(1.02);
+        }
+        .map-location-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            filter: grayscale(0.6);
+        }
+        .map-location-btn .status {
+            font-size: 13px;
+            font-weight: 400;
+            color: #888;
+            display: block;
+            margin-top: 4px;
+        }
+        .map-location-btn.done {
+            border-color: #6b8e4e;
+            background: #eaf5e0;
+        }
+        .map-location-btn.done .status {
+            color: #6b8e4e;
+        }
+        .btn-solve {
+            background: #4a6a3a;
+            border: none;
+            border-radius: 40px;
+            padding: 12px 40px;
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: all 0.25s;
+            box-shadow: 0 4px 0 #2d4a22;
+            margin-top: 16px;
+        }
+        .btn-solve:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #2d4a22;
+        }
+        .btn-solve:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 4px 0 #2d4a22;
+        }
+
+        /* ===== LOCATION SCREEN ===== */
+        #location-screen {
+            padding: 16px 32px 24px 32px;
+        }
+        .location-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0ebe3;
+            margin-bottom: 12px;
+        }
+        .location-header h2 {
+            font-size: 22px;
+            color: #4a3d32;
+        }
+        .location-header .location-name {
+            font-weight: 400;
+            color: #b8860b;
+            font-size: 16px;
+        }
+        .btn-back-map {
+            background: #f0ebe3;
+            border: none;
+            border-radius: 30px;
+            padding: 6px 20px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #5a4a3a;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-back-map:hover {
+            background: #e0d5c8;
+        }
+
+        .location-content {
+            display: flex;
+            gap: 24px;
+            flex: 1;
+            min-height: 0;
+        }
+        .location-image {
+            flex: 1.2;
+            background: #f8f2ea;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 2px solid #e8ddd0;
+            min-height: 200px;
+        }
+        .location-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .location-image .placeholder {
+            font-size: 64px;
+            color: #d4c5b2;
+        }
+        .location-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 0;
+        }
+        .location-panel .character-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #3d3328;
+        }
+        .location-panel .character-role {
+            font-size: 15px;
+            color: #7a6a5a;
+            margin-bottom: 4px;
+        }
+
+        .question-area {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+        .question-area input {
+            flex: 1;
+            min-width: 140px;
+            padding: 12px 18px;
+            border-radius: 40px;
+            border: 2px solid #d4c5b2;
+            font-size: 16px;
+            background: white;
+            outline: none;
+            transition: 0.2s;
+            font-family: inherit;
+        }
+        .question-area input:focus {
+            border-color: #b8860b;
+            box-shadow: 0 0 0 4px rgba(184, 134, 11, 0.10);
+        }
+        .question-area input::placeholder {
+            color: #b0a090;
+        }
+        .btn-ask {
+            background: #b8860b;
+            border: none;
+            border-radius: 40px;
+            padding: 12px 28px;
+            font-size: 16px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .btn-ask:hover {
+            background: #a0750a;
+            transform: scale(1.02);
+        }
+        .btn-ask:active {
+            transform: scale(0.96);
+        }
+
+        .response-box {
+            background: #f8f2ea;
+            border-radius: 16px;
+            padding: 14px 20px;
+            min-height: 52px;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #3d3328;
+            border-left: 4px solid #b8860b;
+            flex-shrink: 0;
+            overflow-y: auto;
+            max-height: 120px;
+        }
+        .response-box .hint {
+            color: #a09080;
+            font-style: italic;
+        }
+
+        .checklist {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px 16px;
+            background: #fcf9f5;
+            border-radius: 14px;
+            padding: 10px 16px;
+            border: 1px solid #e8ddd0;
+            flex-shrink: 0;
+        }
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            color: #5a4a3a;
+        }
+        .checklist-item .icon {
+            font-size: 18px;
+        }
+        .checklist-item.done {
+            color: #6b8e4e;
+            text-decoration: line-through 2px #6b8e4e;
+        }
+        .checklist-item.done .icon {
+            opacity: 0.5;
+        }
+
+        /* ===== NOTEBOOK MODAL ===== */
+        #notebook-modal {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(40, 30, 20, 0.60);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+        #notebook-modal.open {
+            display: flex;
+        }
+        .notebook-content {
+            background: #fcf8f2;
+            border-radius: 28px;
+            padding: 32px 40px;
+            max-width: 740px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.30);
+            border: 2px solid #e8ddd0;
+        }
+        .notebook-content h2 {
+            font-size: 28px;
+            color: #4a3d32;
+            border-bottom: 2px solid #e8ddd0;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .notebook-content h2 .close-btn {
+            background: none;
+            border: none;
+            font-size: 32px;
+            cursor: pointer;
+            color: #7a6a5a;
+            transition: 0.2s;
+        }
+        .notebook-content h2 .close-btn:hover {
+            color: #b8860b;
+            transform: rotate(90deg);
+        }
+        .notebook-section-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #4a3d32;
+            margin-top: 18px;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #e8ddd0;
+            padding-bottom: 6px;
+        }
+        .notebook-section-title:first-of-type {
+            margin-top: 0;
+        }
+        .notebook-fact {
+            background: white;
+            border-radius: 14px;
+            padding: 14px 18px;
+            margin-bottom: 10px;
+            border-left: 4px solid #b8860b;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+            font-size: 15px;
+            line-height: 1.5;
+            color: #3d3328;
+        }
+        .notebook-fact .label {
+            font-weight: 700;
+            color: #b8860b;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .notebook-fact.motive {
+            border-left-color: #8b5a2b;
+        }
+        .notebook-fact.motive .label {
+            color: #8b5a2b;
+        }
+        .notebook-empty {
+            color: #a09080;
+            font-style: italic;
+            text-align: center;
+            padding: 30px 0;
+        }
+
+        /* ===== FINAL SCREEN ===== */
+        #final-screen {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px;
+            gap: 16px;
+        }
+        #final-screen h2 {
+            font-size: 34px;
+            color: #4a3d32;
+        }
+        .final-step {
+            width: 100%;
+            max-width: 560px;
+        }
+        .final-step .step-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #7a6a5a;
+            margin-bottom: 8px;
+        }
+        .suspect-options, .motive-options {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 6px 0 12px 0;
+        }
+        .suspect-options button, .motive-options button {
+            padding: 14px 28px;
+            border-radius: 40px;
+            border: 2px solid #d4c5b2;
+            background: white;
+            font-size: 17px;
+            font-weight: 600;
+            color: #3d3328;
+            cursor: pointer;
+            transition: 0.2s;
+            min-width: 140px;
+        }
+        .suspect-options button:hover, .motive-options button:hover {
+            background: #f5ede4;
+            border-color: #b8860b;
+            transform: scale(1.03);
+        }
+        .suspect-options button.selected, .motive-options button.selected {
+            border-color: #b8860b;
+            background: #f5ede4;
+            box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.25);
+        }
+        .suspect-options button:active, .motive-options button:active {
+            transform: scale(0.96);
+        }
+        .btn-confirm-final {
+            background: #4a6a3a;
+            border: none;
+            border-radius: 40px;
+            padding: 14px 48px;
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+            cursor: pointer;
+            transition: 0.25s;
+            box-shadow: 0 4px 0 #2d4a22;
+            margin-top: 8px;
+        }
+        .btn-confirm-final:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #2d4a22;
+        }
+        .btn-confirm-final:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 4px 0 #2d4a22;
+        }
+        #final-result {
+            margin-top: 8px;
+            padding: 20px 28px;
+            border-radius: 20px;
+            max-width: 580px;
+            font-size: 17px;
+            line-height: 1.7;
+            background: #f8f2ea;
+            border: 2px solid #e8ddd0;
+        }
+        #final-result .correct {
+            color: #4a7a3a;
+            font-weight: 700;
+            font-size: 24px;
+        }
+        #final-result .wrong {
+            color: #b84a3a;
+            font-weight: 700;
+            font-size: 24px;
+        }
+        #final-result .partial {
+            color: #b8860b;
+            font-weight: 700;
+            font-size: 22px;
+        }
+        .btn-restart {
+            background: #4a3d32;
+            border: none;
+            border-radius: 40px;
+            padding: 12px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 8px;
+        }
+        .btn-restart:hover {
+            background: #5a4a3a;
+            transform: scale(1.02);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 800px) {
+            #game-container {
+                border-radius: 0;
+                max-height: 100vh;
+                max-width: 100vw;
+            }
+            .screen {
+                padding: 16px;
+            }
+            #start-screen h1 {
+                font-size: 32px;
+            }
+            #start-screen .crime-description {
+                padding: 20px;
+                font-size: 15px;
+            }
+            .location-content {
+                flex-direction: column;
+            }
+            .location-image {
+                min-height: 140px;
+                max-height: 200px;
+            }
+            .checklist {
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 4px 8px;
+                font-size: 13px;
+                padding: 8px 12px;
+            }
+            .checklist-item {
+                font-size: 13px;
+            }
+            .map-locations {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .map-location-btn {
+                min-width: unset;
+            }
+            .notebook-content {
+                padding: 20px;
+                margin: 16px;
+            }
+            .suspect-options, .motive-options {
+                flex-direction: column;
+                align-items: center;
+            }
+            .suspect-options button, .motive-options button {
+                width: 100%;
+                max-width: 280px;
+            }
+            #top-bar .title-mini {
+                font-size: 14px;
+            }
+            .btn-notebook {
+                padding: 6px 16px;
+                font-size: 14px;
+            }
+        }
+        @media (max-width: 480px) {
+            #start-screen h1 {
+                font-size: 26px;
+            }
+            .btn-start {
+                padding: 14px 40px;
+                font-size: 20px;
+            }
+            .question-area {
+                flex-direction: column;
+            }
+            .question-area input {
+                min-width: unset;
+            }
+            .btn-ask {
+                width: 100%;
+            }
+            .response-box {
+                max-height: 80px;
+                font-size: 14px;
+            }
+            .checklist {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+
+        <!-- ========================================================= -->
+        <!-- START SCREEN                                              -->
+        <!-- ========================================================= -->
+        <div id="start-screen" class="screen active">
+            <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+                <h1>🐠 The Golden Fish Mystery</h1>
+                <div class="subtitle">🔍 A Detective Story for Young Investigators</div>
+
+                <div class="crime-description">
+                    <p><strong>Welcome, Detective!</strong></p>
+                    <p>Something terrible happened at Oakwood School yesterday afternoon. The beautiful golden fish, <strong>Sunny</strong>, who lived in the big aquarium in the Biology classroom, has disappeared! The aquarium is empty. There is water on the floor, and the glass has a small crack.</p>
+                    <p>Sunny was the school's favourite pet. Every student loved to watch her swim. The aquarium was locked, but someone broke it. The crime happened <strong>between 2:00 PM and 3:00 PM</strong> yesterday. During that time, the school was almost empty, but some people were still here.</p>
+                    <p>Three suspects were at school at that time. Each of them has a story. But... is their story true? Who is lying? Who took Sunny?</p>
+                    <p><strong>Your job is simple:</strong><br>
+                    • Visit the crime scene and two other locations.<br>
+                    • Ask questions and collect information in your Detective Notebook.<br>
+                    • Find the thief and their motive!</p>
+                </div>
+
+                <button class="btn-start" onclick="showMap()">🔍 Start Investigation</button>
+            </div>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- MAP SCREEN                                                -->
+        <!-- ========================================================= -->
+        <div id="map-screen" class="screen">
+            <div id="top-bar">
+                <span class="title-mini">📍 Oakwood School</span>
+                <button class="btn-notebook" onclick="toggleNotebook()">📓 Detective Notebook</button>
+            </div>
+
+            <div class="map-title">🗺️ Investigation Map</div>
+
+            <div class="map-wrapper">
+                <img id="map-img" src="map.png" alt="School Map" onerror="this.style.display='none'; document.getElementById('map-placeholder').style.display='flex';">
+                <div id="map-placeholder" class="map-placeholder" style="display:none;">🗺️ MAP</div>
+            </div>
+
+            <div class="map-locations">
+                <button class="map-location-btn" id="btn-loc1" onclick="openLocation(0)">
+                    🧪 Biology Classroom
+                    <span class="status" id="status-loc1">🔒 Locked</span>
+                </button>
+                <button class="map-location-btn" id="btn-loc2" onclick="openLocation(1)" disabled>
+                    🚪 School Corridor
+                    <span class="status" id="status-loc2">🔒 Locked</span>
+                </button>
+                <button class="map-location-btn" id="btn-loc3" onclick="openLocation(2)" disabled>
+                    🍽️ Cafeteria
+                    <span class="status" id="status-loc3">🔒 Locked</span>
+                </button>
+            </div>
+
+            <div style="display:flex; justify-content:center;">
+                <button class="btn-solve" id="btn-solve" disabled onclick="showFinal()">
+                    🏆 Solve the Case
+                </button>
+            </div>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- LOCATION SCREEN                                           -->
+        <!-- ========================================================= -->
+        <div id="location-screen" class="screen">
+            <div class="location-header">
+                <div>
+                    <h2 id="loc-title">Biology Classroom</h2>
+                    <span class="location-name" id="loc-subtitle">📍 Crime Scene</span>
+                </div>
+                <div style="display:flex; gap:12px;">
+                    <button class="btn-notebook" onclick="toggleNotebook()">📓 Notebook</button>
+                    <button class="btn-back-map" onclick="showMap()">← Map</button>
+                </div>
+            </div>
+
+            <div class="location-content">
+                <div class="location-image" id="loc-image-container">
+                    <img id="loc-image" src="" alt="Location" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="placeholder" style="display:none;">🏫</div>
+                </div>
+
+                <div class="location-panel">
+                    <div>
+                        <div class="character-name" id="loc-char-name">Ms. Emma Green</div>
+                        <div class="character-role" id="loc-char-role">Biology Teacher</div>
+                    </div>
+
+                    <div class="question-area">
+                        <input type="text" id="question-input" placeholder="Type your question..." autocomplete="off">
+                        <button class="btn-ask" onclick="askQuestion()">📨 Ask</button>
+                    </div>
+
+                    <div class="response-box" id="response-box">
+                        <span class="hint">💡 Ask a question from the checklist below.</span>
+                    </div>
+
+                    <div class="checklist" id="checklist">
+                        <div class="checklist-item" data-cat="action"><span class="icon">🏃</span> Action</div>
+                        <div class="checklist-item" data-cat="location"><span class="icon">📍</span> Location</div>
+                        <div class="checklist-item" data-cat="company"><span class="icon">👥</span> Company</div>
+                        <div class="checklist-item" data-cat="suspicious"><span class="icon">👀</span> Suspicious Thing</div>
+                        <div class="checklist-item" data-cat="motive"><span class="icon">🕵</span> Suspect / Motive</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- NOTEBOOK MODAL                                            -->
+        <!-- ========================================================= -->
+        <div id="notebook-modal">
+            <div class="notebook-content">
+                <h2>
+                    📓 Detective Notebook
+                    <button class="close-btn" onclick="toggleNotebook()">✕</button>
+                </h2>
+                <div class="notebook-section-title">📌 Clues & Evidence</div>
+                <div id="notebook-entries">
+                    <div class="notebook-empty">No clues yet. Start investigating!</div>
+                </div>
+                <div class="notebook-section-title">🕵 Possible Motives</div>
+                <div id="notebook-motives">
+                    <div class="notebook-empty">No motives yet. Ask suspects who they suspect!</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================================= -->
+        <!-- FINAL SCREEN                                              -->
+        <!-- ========================================================= -->
+        <div id="final-screen" class="screen">
+            <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; gap:8px; padding:16px 0; max-width:700px; margin:0 auto; width:100%;">
+                <h2>🏆 Solve the Case</h2>
+
+                <div class="final-step">
+                    <div class="step-label">🔍 Step 1: Who is guilty?</div>
+                    <div class="suspect-options" id="suspect-options">
+                        <button data-suspect="green" onclick="selectSuspect('green')">🧪 Ms. Green</button>
+                        <button data-suspect="carter" onclick="selectSuspect('carter')">🏀 Mr. Carter</button>
+                        <button data-suspect="dawson" onclick="selectSuspect('dawson')">🧹 Mrs. Dawson</button>
+                    </div>
+                </div>
+
+                <div class="final-step">
+                    <div class="step-label">🕵 Step 2: Why did they do it?</div>
+                    <div class="motive-options" id="motive-options">
+                        <button data-motive="money" onclick="selectMotive('money')">💰 They needed money</button>
+                        <button data-motive="daughter" onclick="selectMotive('daughter')">❤️ To make their daughter happy</button>
+                        <button data-motive="revenge" onclick="selectMotive('revenge')">😤 They wanted revenge</button>
+                    </div>
+                </div>
+
+                <button class="btn-confirm-final" id="btn-confirm-final" disabled onclick="confirmFinal()">
+                    ✅ Confirm Verdict
+                </button>
+
+                <div id="final-result"></div>
+
+                <button class="btn-restart" onclick="restartGame()">🔄 Play Again</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ================================================================
+        //  DATA
+        // ================================================================
+
+        // ---- Locations ----
+        const LOCATIONS = [{
+            id: 0,
+            name: 'Biology Classroom',
+            subtitle: '📍 Crime Scene',
+            image: 'classroom.png',
+            character: 'Ms. Emma Green',
+            role: 'Biology Teacher',
+            unlocked: true,
+            done: false
+        }, {
+            id: 1,
+            name: 'School Corridor',
+            subtitle: '📍 First Floor',
+            image: 'corridor.png',
+            character: 'Mr. Tom Carter',
+            role: 'PE Teacher',
+            unlocked: false,
+            done: false
+        }, {
+            id: 2,
+            name: 'Cafeteria',
+            subtitle: '📍 Ground Floor',
+            image: 'cleaner.png',
+            character: 'Mrs. Vicky Dawson',
+            role: 'School Cleaner',
+            unlocked: false,
+            done: false
+        }];
+
+        // ---- Responses for each location + category (including new 'motive') ----
+        const RESPONSES = [{
+            // Location 0: Ms. Green
+            action: `"I was correcting tests in the teachers' room from 2:00 to 2:45. Then I came to water the plants... the aquarium was empty! I was so shocked! I didn't touch anything."`,
+            location: `"At about 2:15, I saw a short person's shadow through the glass door near the Biology classroom. I didn't see the face."`,
+            company: `"Mr. Carter was in the teachers' room at 2:10 to get his water bottle. Then he went to the gym."`,
+            suspicious: `"The red notebook on the floor isn't mine. The aquarium lock is broken — someone used a tool. And the water was still wet at 2:45."`,
+            motive: `"I suspect Mrs. Dawson, the cleaner. She's always around the school, and I've seen her near my classroom before. But she's a good person... I don't think she would steal. Maybe it was a student? I'm not sure."`
+        }, {
+            // Location 1: Mr. Carter
+            action: `"I was training the basketball team in the gym from 1:30 to 3:00. I didn't leave the gym even for a minute. My players can confirm that."`,
+            location: `"I didn't see anyone near the classroom. But at 2:30 I heard fast footsteps in the corridor — running towards the exit."`,
+            company: `"12 students were training with me. One of them, Alex, said he saw someone in the corridor, but I didn't pay attention."`,
+            suspicious: `"The wet footprints are small — like a child's feet or a small adult. They go from the classroom to the open window. And there's fish food near the footprints."`,
+            motive: `"Honestly? I suspect Ms. Green. She's always in that classroom. She could have easily taken the fish. But why would a teacher steal a fish? Maybe she wanted to sell it? I don't know... but she was the last person in the classroom before the crime."`
+        }, {
+            // Location 2: Mrs. Dawson
+            action: `"I was cleaning the cafeteria from 2:00 to 3:00. I always clean at this time. I didn't go anywhere else."`,
+            location: `"I never go to the Biology classroom. I don't like fish. They are boring." (She speaks quickly, avoiding eye contact.)`,
+            company: `"I was alone. But I saw Ms. Green at 2:15 near the coffee machine, and Mr. Carter at the gym door."`,
+            suspicious: `"This blue towel? I use it for cleaning. And this small net in my pocket is for cleaning the sink. Nothing strange!" (Her face is red. She looks very nervous.)`,
+            motive: `"I... I don't suspect anyone. I don't know who could do this. But... I have a daughter in hospital. She loves fish. Her fish died last week. She was so sad. I wish I could give her a new fish... but I wouldn't steal! No, I wouldn't." (She looks down, unable to meet your eyes.)`
+        }];
+
+        // ---- Notebook facts per location + category ----
+        const FACTS = [{
+            action: 'Ms. Green was correcting tests until 2:45. She found the empty aquarium at 2:45.',
+            location: 'She saw a short person\'s shadow near the Biology classroom at 2:15.',
+            company: 'Mr. Carter was in the teachers\' room at 2:10 to get his water bottle.',
+            suspicious: 'Red notebook not hers. Lock broken with tool. Water was still wet at 2:45.',
+            motive: 'Ms. Green suspects Mrs. Dawson but also thinks it could be a student. She is uncertain.'
+        }, {
+            action: 'Mr. Carter was training basketball from 1:30 to 3:00. He says he never left the gym.',
+            location: 'He heard running footsteps in the corridor at 2:30, going towards the exit.',
+            company: '12 students with him. Alex said he saw someone in the corridor.',
+            suspicious: 'Wet footprints (small) from classroom to open window. Fish food near footprints.',
+            motive: 'Mr. Carter suspects Ms. Green. He thinks she might have taken the fish to sell it.'
+        }, {
+            action: 'Mrs. Dawson says she was cleaning the cafeteria from 2:00 to 3:00. She never left.',
+            location: 'She says she never goes to Biology classroom. She seems nervous.',
+            company: 'She was alone. Saw Ms. Green at 2:15 and Mr. Carter at the gym door.',
+            suspicious: 'Blue wet towel in trash. Small net in pocket. She looks guilty.',
+            motive: 'Mrs. Dawson has a daughter in hospital who loves fish. Her own fish died last week. She seems very emotional when talking about her daughter.'
+        }];
+
+        // ---- Question patterns (UPDATED with new category) ----
+        const PATTERNS = {
+            action: [
+                'what were you doing',
+                'what did you do',
+                'what were you doing yesterday',
+                'what did you do yesterday',
+                'what were you doing at',
+                'what were you doing between',
+                'what was your activity'
+            ],
+            location: [
+                'where were you',
+                'where did you go',
+                'where were you yesterday',
+                'where were you at',
+                'did you see anyone',
+                'did you see anybody',
+                'did you see someone',
+                'did you see anything'
+            ],
+            company: [
+                'who were you with',
+                'were you alone',
+                'were you with anyone',
+                'were you with somebody',
+                'who was with you',
+                'was anyone with you',
+                'was somebody with you'
+            ],
+            suspicious: [
+                'did you notice anything',
+                'did you see anything unusual',
+                'did you see anything strange',
+                'did anything suspicious',
+                'did you notice something',
+                'did you find anything',
+                'what did you notice'
+            ],
+            motive: [
+                'who do you suspect',
+                'who do you think did it',
+                'who do you think stole it',
+                'who do you think is guilty',
+                'do you suspect anyone',
+                'why do you suspect him',
+                'why do you suspect her',
+                'why do you think so',
+                'what was their motive',
+                'why would they do it',
+                'why did they do it',
+                'who did you suspect',
+                'who did you think did it',
+                'what is the motive',
+                'what do you think the motive was'
+            ]
+        };
+
+        // ---- State ----
+        let currentLocation = 0;
+        const completedCategories = [
+            [], // loc0
+            [], // loc1
+            [] // loc2
+        ];
+        const notebookFacts = [];
+        const notebookMotives = [];
+        let notebookOpen = false;
+
+        // ---- Final state ----
+        let selectedSuspect = null;
+        let selectedMotive = null;
+        let finalSubmitted = false;
+
+        // ================================================================
+        //  NAVIGATION
+        // ================================================================
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function showMap() {
+            updateMapUI();
+            showScreen('map-screen');
+        }
+
+        function openLocation(index) {
+            if (!LOCATIONS[index].unlocked) return;
+            currentLocation = index;
+            const loc = LOCATIONS[index];
+            document.getElementById('loc-title').textContent = loc.name;
+            document.getElementById('loc-subtitle').textContent = loc.subtitle;
+            document.getElementById('loc-char-name').textContent = loc.character;
+            document.getElementById('loc-char-role').textContent = loc.role;
+
+            const img = document.getElementById('loc-image');
+            img.src = loc.image;
+            img.style.display = 'block';
+            img.nextElementSibling.style.display = 'none';
+
+            // Reset response
+            document.getElementById('response-box').innerHTML = `<span class="hint">💡 Ask a question from the checklist below.</span>`;
+            document.getElementById('question-input').value = '';
+            document.getElementById('question-input').focus();
+
+            updateChecklist();
+            showScreen('location-screen');
+        }
+
+        // ================================================================
+        //  MAP UI
+        // ================================================================
+
+        function updateMapUI() {
+            for (let i = 0; i < LOCATIONS.length; i++) {
+                const btn = document.getElementById('btn-loc' + (i + 1));
+                const status = document.getElementById('status-loc' + (i + 1));
+                const loc = LOCATIONS[i];
+
+                if (loc.unlocked) {
+                    btn.disabled = false;
+                    if (loc.done) {
+                        btn.classList.add('done');
+                        status.textContent = '✅ Done';
+                    } else {
+                        btn.classList.remove('done');
+                        status.textContent = '🔓 Click to investigate';
+                    }
+                } else {
+                    btn.disabled = true;
+                    btn.classList.remove('done');
+                    status.textContent = '🔒 Locked';
+                }
+            }
+
+            // Solve button
+            const allDone = LOCATIONS.every(l => l.done);
+            document.getElementById('btn-solve').disabled = !allDone;
+        }
+
+        // ================================================================
+        //  CHECKLIST
+        // ================================================================
+
+        function updateChecklist() {
+            const cats = ['action', 'location', 'company', 'suspicious', 'motive'];
+            const done = completedCategories[currentLocation] || [];
+            const items = document.querySelectorAll('.checklist-item');
+            items.forEach(el => {
+                const cat = el.dataset.cat;
+                if (done.includes(cat)) {
+                    el.classList.add('done');
+                } else {
+                    el.classList.remove('done');
+                }
+            });
+        }
+
+        // ================================================================
+        //  ASK QUESTION
+        // ================================================================
+
+        function askQuestion() {
+            const input = document.getElementById('question-input');
+            const text = input.value.trim();
+            if (!text) {
+                document.getElementById('response-box').innerHTML = `<span style="color:#b84a3a;">⚠️ Please type a question.</span>`;
+                return;
+            }
+
+            const lower = text.toLowerCase();
+            let category = null;
+
+            // Detect category
+            for (const [cat, patterns] of Object.entries(PATTERNS)) {
+                for (const p of patterns) {
+                    if (lower.includes(p)) {
+                        category = cat;
+                        break;
+                    }
+                }
+                if (category) break;
+            }
+
+            if (!category) {
+                document.getElementById('response-box').innerHTML =
+                    `<span style="color:#b84a3a;">❓ I don't understand. Try asking about: Action, Location, Company, Suspicious Thing, or Suspect/Motive.</span>`;
+                return;
+            }
+
+            // Check if already answered
+            const done = completedCategories[currentLocation] || [];
+            if (done.includes(category)) {
+                if (category === 'motive') {
+                    document.getElementById('response-box').innerHTML =
+                        `<span style="color:#6b8e4e;">✅ You already know who this person suspects.</span>`;
+                } else {
+                    document.getElementById('response-box').innerHTML =
+                        `<span style="color:#6b8e4e;">✅ You already know this information.</span>`;
+                }
+                return;
+            }
+
+            // --- Give response ---
+            const resp = RESPONSES[currentLocation][category];
+            const fact = FACTS[currentLocation][category];
+
+            document.getElementById('response-box').innerHTML = `<span>${resp}</span>`;
+
+            // Add to notebook
+            const locName = LOCATIONS[currentLocation].character;
+            if (category === 'motive') {
+                notebookMotives.push({
+                    location: locName,
+                    text: fact
+                });
+            } else {
+                notebookFacts.push({
+                    location: locName,
+                    category: category,
+                    text: fact
+                });
+            }
+
+            // Mark done
+            completedCategories[currentLocation].push(category);
+            updateChecklist();
+
+            // Check if location complete (all 5 categories done)
+            if (completedCategories[currentLocation].length === 5) {
+                LOCATIONS[currentLocation].done = true;
+                // Unlock next location
+                if (currentLocation === 0) {
+                    LOCATIONS[1].unlocked = true;
+                } else if (currentLocation === 1) {
+                    LOCATIONS[2].unlocked = true;
+                }
+                document.getElementById('response-box').innerHTML +=
+                    `<br><br><strong style="color:#b8860b;">✅ All questions answered! Return to the map.</strong>`;
+                updateMapUI();
+            }
+
+            input.value = '';
+            input.focus();
+            updateMapUI();
+        }
+
+        // ================================================================
+        //  NOTEBOOK
+        // ================================================================
+
+        function toggleNotebook() {
+            notebookOpen = !notebookOpen;
+            const modal = document.getElementById('notebook-modal');
+            if (notebookOpen) {
+                renderNotebook();
+                modal.classList.add('open');
+            } else {
+                modal.classList.remove('open');
+            }
+        }
+
+        function renderNotebook() {
+            // Render facts
+            const container = document.getElementById('notebook-entries');
+            if (notebookFacts.length === 0) {
+                container.innerHTML = `<div class="notebook-empty">No clues yet. Start investigating!</div>`;
+            } else {
+                let html = '';
+                for (const f of notebookFacts) {
+                    const iconMap = {
+                        action: '🏃',
+                        location: '📍',
+                        company: '👥',
+                        suspicious: '👀'
+                    };
+                    html += `
+                        <div class="notebook-fact">
+                            <span class="label">${iconMap[f.category] || '📌'} ${f.category.toUpperCase()} — ${f.location}</span>
+                            ${f.text}
+                        </div>
+                    `;
+                }
+                container.innerHTML = html;
+            }
+
+            // Render motives
+            const motiveContainer = document.getElementById('notebook-motives');
+            if (notebookMotives.length === 0) {
+                motiveContainer.innerHTML = `<div class="notebook-empty">No motives yet. Ask suspects who they suspect!</div>`;
+            } else {
+                let html = '';
+                for (const m of notebookMotives) {
+                    html += `
+                        <div class="notebook-fact motive">
+                            <span class="label">🕵 SUSPECT / MOTIVE — ${m.location}</span>
+                            ${m.text}
+                        </div>
+                    `;
+                }
+                motiveContainer.innerHTML = html;
+            }
+        }
+
+        // ================================================================
+        //  FINAL
+        // ================================================================
+
+        function showFinal() {
+            const allDone = LOCATIONS.every(l => l.done);
+            if (!allDone) return;
+            finalSubmitted = false;
+            selectedSuspect = null;
+            selectedMotive = null;
+            document.getElementById('final-result').innerHTML = '';
+            document.getElementById('btn-confirm-final').disabled = true;
+
+            // Reset button selections
+            document.querySelectorAll('#suspect-options button').forEach(b => b.classList.remove('selected'));
+            document.querySelectorAll('#motive-options button').forEach(b => b.classList.remove('selected'));
+
+            showScreen('final-screen');
+        }
+
+        function selectSuspect(id) {
+            selectedSuspect = id;
+            document.querySelectorAll('#suspect-options button').forEach(b => {
+                b.classList.toggle('selected', b.dataset.suspect === id);
+            });
+            checkFinalReady();
+        }
+
+        function selectMotive(id) {
+            selectedMotive = id;
+            document.querySelectorAll('#motive-options button').forEach(b => {
+                b.classList.toggle('selected', b.dataset.motive === id);
+            });
+            checkFinalReady();
+        }
+
+        function checkFinalReady() {
+            document.getElementById('btn-confirm-final').disabled = !(selectedSuspect && selectedMotive);
+        }
+
+        function confirmFinal() {
+            if (finalSubmitted) return;
+            if (!selectedSuspect || !selectedMotive) return;
+            finalSubmitted = true;
+
+            const resultDiv = document.getElementById('final-result');
+
+            // Correct answer: suspect = 'dawson', motive = 'daughter'
+            const correctSuspect = 'dawson';
+            const correctMotive = 'daughter';
+
+            if (selectedSuspect === correctSuspect && selectedMotive === correctMotive) {
+                resultDiv.innerHTML = `
+                    <div class="correct">✅ CASE SOLVED!</div>
+                    <p style="margin-top:10px;"><strong>Mrs. Vicky Dawson</strong> is the thief!</p>
+                    <p style="margin-top:4px;"><strong>Motive:</strong> She wanted to make her daughter happy.</p>
+                    <p style="text-align:left; background:#f0ebe3; padding:16px; border-radius:12px; margin-top:8px;">
+                        <strong>🔍 Evidence:</strong><br>
+                        • She said she was cleaning the cafeteria, but the water in the classroom was still wet at 2:45.<br>
+                        • The wet footprints are small — she is a short woman.<br>
+                        • She had a blue wet towel (used to dry the water) and a small fish net in her pocket.<br>
+                        • She was nervous and lied about not liking fish.<br>
+                        • Her daughter Lily is in hospital and loves fish. Her own fish died last week.
+                    </p>
+                `;
+            } else if (selectedSuspect === correctSuspect && selectedMotive !== correctMotive) {
+                resultDiv.innerHTML = `
+                    <div class="partial">🔍 You found the thief, but the motive is wrong.</div>
+                    <p style="margin-top:8px;">Mrs. Dawson did take Sunny, but <strong>why</strong> did she do it? Check the notebook again!</p>
+                    <p style="font-size:15px; color:#7a6a5a;">💡 Look at the "Possible Motives" section in your Detective Notebook.</p>
+                `;
+                finalSubmitted = false;
+                document.getElementById('btn-confirm-final').disabled = false;
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="wrong">❌ Wrong suspect!</div>
+                    <p style="margin-top:8px;">That person is innocent. Check the facts again.</p>
+                    <p style="font-size:15px; color:#7a6a5a;">💡 Review your Detective Notebook for clues.</p>
+                `;
+                finalSubmitted = false;
+                document.getElementById('btn-confirm-final').disabled = false;
+            }
+        }
+
+        // ================================================================
+        //  RESTART
+        // ================================================================
+
+        function restartGame() {
+            // Reset state
+            for (let i = 0; i < LOCATIONS.length; i++) {
+                LOCATIONS[i].unlocked = (i === 0);
+                LOCATIONS[i].done = false;
+                completedCategories[i] = [];
+            }
+            notebookFacts.length = 0;
+            notebookMotives.length = 0;
+            notebookOpen = false;
+            document.getElementById('notebook-modal').classList.remove('open');
+            finalSubmitted = false;
+            selectedSuspect = null;
+            selectedMotive = null;
+            document.getElementById('final-result').innerHTML = '';
+            document.getElementById('question-input').value = '';
+            document.getElementById('response-box').innerHTML = `<span class="hint">💡 Ask a question from the checklist below.</span>`;
+            document.getElementById('btn-confirm-final').disabled = true;
+            document.querySelectorAll('#suspect-options button').forEach(b => b.classList.remove('selected'));
+            document.querySelectorAll('#motive-options button').forEach(b => b.classList.remove('selected'));
+
+            updateMapUI();
+            showScreen('start-screen');
+        }
+
+        // ================================================================
+        //  ENTER KEY
+        // ================================================================
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const active = document.querySelector('.screen.active');
+                if (active && active.id === 'location-screen') {
+                    askQuestion();
+                }
+            }
+            if (e.key === 'Escape') {
+                if (notebookOpen) toggleNotebook();
+            }
+        });
+
+        // ================================================================
+        //  INIT
+        // ================================================================
+
+        updateMapUI();
+        document.getElementById('question-input').focus();
+    </script>
+</body>
+</html>
